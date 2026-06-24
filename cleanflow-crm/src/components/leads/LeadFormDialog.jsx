@@ -59,7 +59,7 @@ export function LeadFormDialog({ open, onClose, lead, onSaved }) {
         <div className="grid grid-cols-2 gap-3">
           <Field label="Name" error={errors.name?.message} className="col-span-2">
             <Input
-              placeholder="Contact name"
+              placeholder="Customer name"
               {...register("name", { required: "Name is required" })}
             />
           </Field>

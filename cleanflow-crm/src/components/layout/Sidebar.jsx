@@ -5,7 +5,7 @@ import {
   Contact2,
   KanbanSquare,
   StickyNote,
-  CalendarCheck,
+  // CalendarCheck,
   Settings,
   LogOut,
   Sparkles,
@@ -17,10 +17,10 @@ import { useAuth } from "../../context/AuthContext";
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutGrid, end: true },
   { to: "/leads", label: "Leads", icon: Users },
-  { to: "/contacts", label: "Contacts", icon: Contact2 },
-  { to: "/pipeline", label: "Pipeline", icon: KanbanSquare },
+  { to: "/customers", label: "Customers", icon: Contact2 },
+  { to: "/jobs", label: "Jobs", icon: KanbanSquare },
   { to: "/notes", label: "Notes", icon: StickyNote },
-  { to: "/tasks", label: "Follow-ups", icon: CalendarCheck },
+  // { to: "/tasks", label: "Follow-ups", icon: CalendarCheck },
 ];
 
 export function Sidebar({ onNavigate }) {
@@ -33,7 +33,7 @@ export function Sidebar({ onNavigate }) {
         <div className="brand-gradient flex h-9 w-9 items-center justify-center rounded-xl text-white">
           <Sparkles className="h-5 w-5" />
         </div>
-        <span className="font-display text-lg font-bold text-ink">TTP CRM</span>
+        <span className="font-display text-lg font-bold text-ink">CleanFlow CRM</span>
       </div>
 
       {/* Nav links */}

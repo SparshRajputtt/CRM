@@ -18,8 +18,8 @@ import { useAuth } from "../../context/AuthContext";
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutGrid, end: true },
   { to: "/leads", label: "Leads", icon: Users },
-  { to: "/contacts", label: "Contacts", icon: Contact2 },
-  { to: "/pipeline", label: "Pipeline", icon: KanbanSquare },
+  { to: "/customers", label: "Customers", icon: Contact2 },
+  { to: "/jobs", label: "Jobs", icon: KanbanSquare },
   { to: "/notes", label: "Notes", icon: StickyNote },
   { to: "/tasks", label: "Follow-ups", icon: CalendarCheck },
 ];

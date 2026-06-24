@@ -21,7 +21,7 @@ export function AuthShell({ children }) {
             Close more deals with an AI co-pilot in your pipeline.
           </h2>
           <p className="mt-4 max-w-md text-white/70">
-            TTP CRM unifies your leads, contacts and follow-ups — then layers
+            CleanFlow CRM unifies your leads, contacts and follow-ups — then layers
             Gemini-powered summaries, email drafts and sales insights on top.
           </p>
 

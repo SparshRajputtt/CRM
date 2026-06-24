@@ -17,7 +17,7 @@ export function HeroCard({ value = 0, label = "Pipeline value" }) {
 
         <div className="relative flex items-start justify-between">
           <span className="font-display text-lg font-extrabold tracking-tight">
-            TTP CRM
+            CleanFlow CRM
           </span>
           <Wifi className="h-6 w-6 rotate-90 opacity-90" />
         </div>

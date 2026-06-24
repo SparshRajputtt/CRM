@@ -16,8 +16,8 @@ import { cn } from "../../lib/utils";
 const LINKS = [
   { to: "/", label: "Dashboard", end: true },
   { to: "/leads", label: "Leads" },
-  { to: "/pipeline", label: "Pipeline" },
-  { to: "/contacts", label: "Contacts" },
+  { to: "/jobs", label: "Jobs" },
+  { to: "/customers", label: "Customers" },
   { to: "/tasks", label: "Follow-ups" },
 ];
 
@@ -33,7 +33,7 @@ export function TopNav({ onMenuClick }) {
           <Sparkles className="h-5 w-5" />
         </div>
         <span className="hidden font-display text-lg font-bold text-ink sm:block">
-          TTP CRM
+          CleanFlow CRM
         </span>
       </div>
 

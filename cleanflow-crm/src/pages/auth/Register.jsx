@@ -22,7 +22,7 @@ export default function Register() {
     setSubmitting(true);
     try {
       await registerUser(data);
-      toast.success("Account created — welcome to TTP CRM! 🎉");
+      toast.success("Account created — welcome to CleanFLow CRM! 🎉");
       navigate("/", { replace: true });
     } catch (err) {
       toast.error(err.message || "Registration failed");
