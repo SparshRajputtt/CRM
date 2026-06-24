@@ -383,7 +383,7 @@ function TopDeals({ leads }) {
       ) : (
         <ul className="mt-4 space-y-2.5">
           {deals.map((l, i) => {
-            const style = STAGE_STYLES[l.status] || STAGE_STYLES.New;
+            const style = STAGE_STYLES[l.status] || STAGE_STYLES.Scheduled;
             return (
               <li key={l._id} className="flex items-center gap-3">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-muted text-xs font-semibold text-ink-soft">
@@ -515,7 +515,7 @@ function ActivityTable({ leads }) {
         </thead>
         <tbody>
           {leads.map((l) => {
-            const style = STAGE_STYLES[l.status] || STAGE_STYLES.New;
+            const style = STAGE_STYLES[l.status] || STAGE_STYLES.Scheduled;
             return (
               <tr
                 key={l.id}

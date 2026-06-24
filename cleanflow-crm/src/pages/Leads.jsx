@@ -396,7 +396,7 @@ export default function Leads() {
               </thead>
               <tbody>
                 {sorted.map((l) => {
-                  const stage = STAGE_STYLES[l.status] || STAGE_STYLES.New;
+                  const stage = STAGE_STYLES[l.status] || STAGE_STYLES.Scheduled;
                   const isSel = selected.has(l._id);
                   return (
                     <tr
@@ -552,7 +552,7 @@ function ViewToggle({ view, onChange }) {
 
 /* ── Card used in the grid view ─────────────────────────────────────── */
 function LeadGridCard({ lead, selected, onToggle, onOpen, onEdit, onDelete }) {
-  const stage = STAGE_STYLES[lead.status] || STAGE_STYLES.New;
+  const stage = STAGE_STYLES[lead.status] || STAGE_STYLES.Scheduled;
   return (
     <div
       onClick={onOpen}

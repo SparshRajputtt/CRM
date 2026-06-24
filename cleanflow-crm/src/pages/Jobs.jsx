@@ -27,7 +27,8 @@ import { toast } from "sonner";
 /* Group a flat lead list into { stage: Lead[] } buckets. */
 const toBoard = (leads) => {
   const board = Object.fromEntries(JOB_STAGES.map((s) => [s, []]));
-  for (const l of leads) (board[l.status] || board.New).push(l);
+  // Fall back safely to the first stage in your array if the status doesn't match a bucket
+  for (const l of leads) (board[l.status] || board[JOB_STAGES[0]]).push(l);
   return board;
 };
 
