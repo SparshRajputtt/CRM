@@ -310,7 +310,7 @@ function AiIntegrationCard() {
             {/* Confirmation when connected */}
             {status.configured && (
               <p className="text-sm text-ink-soft">
-                AI features are active. Summaries, email drafts, and pipeline
+                AI features are active. Summaries, email drafts, and job
                 insights are all powered by{" "}
                 <span className="font-medium text-ink">{status.model}</span>.
               </p>

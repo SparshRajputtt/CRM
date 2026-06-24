@@ -78,7 +78,7 @@ function FilterChip({ label, count, active, onClick }) {
 // ── NoteCard ───────────────────────────────────────────────────────────────────
 function NoteCard({ note, onEdit, onDelete, onTogglePin }) {
   // Prefer lead over contact for the linked-entity chip
-  const entity = note.lead ?? note.contact ?? null;
+  const entity = note.lead ?? note.customer ?? null;
 
   return (
     <div
@@ -203,7 +203,7 @@ function NoteFormDialog({ open, onClose, note, leads, onSaved }) {
       onClose={onClose}
       title={isEditing ? "Edit note" : "New note"}
       description={
-        isEditing ? "Update your note below." : "Add a note linked to a lead or contact."
+        isEditing ? "Update your note below." : "Add a note linked to a lead or customer."
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 mt-2">
@@ -287,8 +287,8 @@ export default function Notes() {
     return {
       total: list.length,
       pinned: list.filter((n) => n.pinned).length,
-      linked: list.filter((n) => n.lead || n.contact).length,
-      unlinked: list.filter((n) => !n.lead && !n.contact).length,
+      linked: list.filter((n) => n.lead || n.customer).length,
+      unlinked: list.filter((n) => !n.lead && !n.customer).length,
     };
   }, [notes]);
 
@@ -307,8 +307,8 @@ export default function Notes() {
 
     // Quick-filter chip
     if (filter === "pinned") list = list.filter((n) => n.pinned);
-    else if (filter === "linked") list = list.filter((n) => n.lead || n.contact);
-    else if (filter === "unlinked") list = list.filter((n) => !n.lead && !n.contact);
+    else if (filter === "linked") list = list.filter((n) => n.lead || n.customer);
+    else if (filter === "unlinked") list = list.filter((n) => !n.lead && !n.customer);
 
     // Content search
     if (search.trim()) {
@@ -356,7 +356,7 @@ export default function Notes() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <PageHeader title="Notes" subtitle="Capture context across your deals and contacts.">
+      <PageHeader title="Notes" subtitle="Capture context across your deals and customers.">
         <Button onClick={openNew}>
           <Plus className="h-4 w-4" /> New note
         </Button>

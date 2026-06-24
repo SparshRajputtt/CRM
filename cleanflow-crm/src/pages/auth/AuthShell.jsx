@@ -13,21 +13,21 @@ export function AuthShell({ children }) {
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
             <Sparkles className="h-5 w-5" />
           </div>
-          <span className="font-display text-lg font-bold">Time To Program CRM</span>
+          <span className="font-display text-lg font-bold">CleanFlow CRM</span>
         </div>
 
         <div className="relative">
           <h2 className="font-display text-4xl font-bold leading-tight">
-            Close more deals with an AI co-pilot in your pipeline.
+            Close more deals with an AI co-pilot.
           </h2>
           <p className="mt-4 max-w-md text-white/70">
-            CleanFlow CRM unifies your leads, contacts and follow-ups — then layers
+            CleanFlow CRM unifies your leads, customers and follow-ups — then layers
             Gemini-powered summaries, email drafts and sales insights on top.
           </p>
 
           <div className="mt-10 space-y-4">
             {[
-              { icon: TrendingUp, text: "Visual pipeline with drag-and-drop stages" },
+              { icon: TrendingUp, text: "Visual job management with drag-and-drop stages" },
               { icon: Bot, text: "AI lead scoring & instant email drafting" },
               { icon: ShieldCheck, text: "Secure JWT auth, your data stays yours" },
             ].map(({ icon: Icon, text }) => (
@@ -42,7 +42,7 @@ export function AuthShell({ children }) {
         </div>
 
         <p className="relative text-xs text-white/50">
-          © {new Date().getFullYear()} Time To Program. All rights reserved.
+          © {new Date().getFullYear()} CleanFlow CRM. All rights reserved.
         </p>
       </div>
 

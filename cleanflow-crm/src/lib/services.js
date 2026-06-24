@@ -17,7 +17,7 @@
 import {
   mockUser,
   makeLeads,
-  makeContacts,
+  makeCustomers,
   makeNotes,
   makeTasks,
   mockAiStatus,
@@ -29,7 +29,7 @@ import {
 /* In-memory stores so create / edit / delete feel real during the UI phase.
    They reset on page refresh — that's expected for a mock. */
 let leads = makeLeads();
-let contacts = makeContacts();
+let customers = makeCustomers();
 let notes = makeNotes();
 let tasks = makeTasks();
 
@@ -108,41 +108,41 @@ export const leadsApi = {
         l._id === u.id ? { ...l, status: u.status, order: u.order } : l
       );
     });
-    return reply({ success: true, message: "Pipeline updated" });
+    return reply({ success: true, message: "Jobs updated" });
   },
 };
 
-/* ── Contacts ───────────────────────────────────────────────────────── */
-export const contactsApi = {
-  // list: (params) => api.get("/contacts", { params }),
-  list: () => reply({ success: true, count: contacts.length, contacts }),
+/* ── Customers ───────────────────────────────────────────────────────── */
+export const customersApi = {
+  // list: (params) => api.get("/customers", { params }),
+  list: () => reply({ success: true, count: customers.length, customers }),
 
-  // get: (id) => api.get(`/contacts/${id}`),
-  get: (id) => reply({ success: true, contact: contacts.find((c) => c._id === id) }),
+  // get: (id) => api.get(`/customers/${id}`),
+  get: (id) => reply({ success: true, c: customers.find((c) => c._id === id) }),
 
-  // create: (data) => api.post("/contacts", data),
+  // create: (data) => api.post("/customers", data),
   create: (data) => {
-    const contact = {
+    const customer = {
       _id: uid(),
       tags: [],
       favorite: false,
       createdAt: new Date().toISOString(),
       ...data,
     };
-    contacts = [contact, ...contacts];
-    return reply({ success: true, contact });
+    customers = [customer, ...customers];
+    return reply({ success: true, customer });
   },
 
-  // update: (id, data) => api.put(`/contacts/${id}`, data),
+  // update: (id, data) => api.put(`/customers/${id}`, data),
   update: (id, data) => {
-    contacts = contacts.map((c) => (c._id === id ? { ...c, ...data } : c));
-    return reply({ success: true, contact: contacts.find((c) => c._id === id) });
+    customers = customers.map((c) => (c._id === id ? { ...c, ...data } : c));
+    return reply({ success: true, customer: customers.find((c) => c._id === id) });
   },
 
-  // remove: (id) => api.delete(`/contacts/${id}`),
+  // remove: (id) => api.delete(`/customers/${id}`),
   remove: (id) => {
-    contacts = contacts.filter((c) => c._id !== id);
-    return reply({ success: true, message: "Contact deleted" });
+    customers = customers.filter((c) => c._id !== id);
+    return reply({ success: true, message: "Customer deleted" });
   },
 };
 
@@ -162,7 +162,7 @@ export const notesApi = {
       _id: uid(),
       content: data.content,
       lead: data.lead ? leadLite(data.lead) : null,
-      contact: null,
+      customer: null,
       pinned: Boolean(data.pinned),
       createdAt: new Date().toISOString(),
     };
@@ -198,7 +198,7 @@ export const tasksApi = {
     const task = {
       _id: uid(),
       description: "",
-      relatedContact: null,
+      relatedCustomer: null,
       createdAt: new Date().toISOString(),
       ...data,
       relatedLead: data.relatedLead ? leadLite(data.relatedLead) : null,
@@ -246,14 +246,14 @@ export const aiApi = {
 };
 
 /* ── Analytics (computed from the in-memory leads, so the dashboard always
-      matches the Leads/Pipeline pages) ──────────────────────────────────── */
+      matches the Leads/Jobs pages) ──────────────────────────────────── */
 export const analyticsApi = {
   // overview: () => api.get("/analytics/overview"),
   overview: () => reply(buildOverview()),
 };
 
 function buildOverview() {
-  const stages = ["New", "Qualified", "Proposal", "Won", "Lost"];
+  const stages = ["New", "Contacted", "Proposal", "Won", "Lost"];
   const byStage = Object.fromEntries(stages.map((s) => [s, { count: 0, value: 0 }]));
   let totalValue = 0;
   let wonValue = 0;
@@ -305,13 +305,13 @@ function buildOverview() {
     success: true,
     stats: {
       revenueWon: wonValue,
-      pipelineValue: totalValue,
+      jobsValue: totalValue,
       totalLeads: leads.length,
-      totalContacts: contacts.length,
+      totalCustomers: customers.length,
       openTasks: tasks.filter((t) => t.status !== "Completed").length,
       conversionRate,
     },
-    pipeline: stages.map((s) => ({ stage: s, count: byStage[s].count, value: byStage[s].value })),
+    jobs: stages.map((s) => ({ stage: s, count: byStage[s].count, value: byStage[s].value })),
     trend,
     recentLeads,
   };

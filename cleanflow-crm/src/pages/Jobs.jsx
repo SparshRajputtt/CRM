@@ -20,18 +20,18 @@ import { PageHeader } from "../components/common/PageHeader";
 import { Spinner, Avatar, Badge, Card } from "../components/ui";
 import { leadsApi, aiApi } from "../lib/services";
 import { currency } from "../lib/format";
-import { PIPELINE_STAGES, STAGE_STYLES, PRIORITY_STYLES } from "../lib/constants";
+import { JOB_STAGES, STAGE_STYLES, PRIORITY_STYLES } from "../lib/constants";
 import { cn } from "../lib/utils";
 import { toast } from "sonner";
 
 /* Group a flat lead list into { stage: Lead[] } buckets. */
 const toBoard = (leads) => {
-  const board = Object.fromEntries(PIPELINE_STAGES.map((s) => [s, []]));
+  const board = Object.fromEntries(JOB_STAGES.map((s) => [s, []]));
   for (const l of leads) (board[l.status] || board.New).push(l);
   return board;
 };
 
-export default function Pipeline() {
+export default function Jobs() {
   const [board, setBoard] = useState(null);
   const [activeId, setActiveId] = useState(null);
 
@@ -50,7 +50,7 @@ export default function Pipeline() {
 
   const findContainer = (id) => {
     if (id in board) return id;
-    return PIPELINE_STAGES.find((s) => board[s].some((l) => l._id === id));
+    return JOB_STAGES.find((s) => board[s].some((l) => l._id === id));
   };
 
   const activeLead = activeId
@@ -95,12 +95,12 @@ export default function Pipeline() {
 
       // Build the persistence payload across all affected columns.
       const updates = [];
-      PIPELINE_STAGES.forEach((stage) => {
+      JOB_STAGES.forEach((stage) => {
         next[stage].forEach((l, order) =>
           updates.push({ id: l._id, status: stage, order })
         );
       });
-      leadsApi.reorder(updates).catch(() => toast.error("Could not save pipeline"));
+      leadsApi.reorder(updates).catch(() => toast.error("Could not save jobs"));
       return next;
     });
   };
@@ -117,7 +117,7 @@ export default function Pipeline() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Pipeline"
+        title="Jobs"
         subtitle={`${allLeads.length} leads · ${currency(totalValue, { compact: true })} in play`}
       />
 
@@ -126,7 +126,7 @@ export default function Pipeline() {
         <StatTile
           icon={DollarSign}
           tint="bg-brand-50 text-brand-600"
-          label="Total pipeline"
+          label="Total jobs"
           value={currency(totalValue, { compact: true })}
         />
         <StatTile
@@ -158,7 +158,7 @@ export default function Pipeline() {
         onDragCancel={() => setActiveId(null)}
       >
         <div className="flex gap-4 overflow-x-auto pb-4">
-          {PIPELINE_STAGES.map((stage) => (
+          {JOB_STAGES.map((stage) => (
             <Column key={stage} stage={stage} leads={board[stage]} />
           ))}
         </div>

@@ -252,7 +252,7 @@ export default function Leads() {
         <StatTile
           icon={TrendingUp}
           tint="bg-sky-50 text-sky-600"
-          label="Open pipeline"
+          label="Open jobs"
           value={currency(kpis.openValue, { compact: true })}
         />
         <StatTile

@@ -71,7 +71,7 @@ export function LeadDrawer({ open, onClose, lead, onEdit, onDelete }) {
           <p className="mt-1 text-2xl font-bold text-ink">{currency(lead.value)}</p>
         </div>
 
-        {/* Contact info */}
+        {/* Customer info */}
         <div className="mt-4 space-y-2">
           <InfoRow icon={Mail} value={lead.email} href={`mailto:${lead.email}`} />
           <InfoRow icon={Phone} value={lead.phone} href={`tel:${lead.phone}`} />

@@ -5,7 +5,7 @@ import { aiApi } from "../../lib/services";
 import { toast } from "sonner";
 
 /**
- * AI Sales Insights panel — calls Gemini to analyse the current pipeline and
+ * AI Sales Insights panel — calls Gemini to analyse the current jobs and
  * surface a health score, observations and recommendations.
  */
 export function AiInsightsCard() {
@@ -52,11 +52,11 @@ export function AiInsightsCard() {
       ) : !data ? (
         <div className="flex flex-1 flex-col items-center justify-center py-6 text-center">
           <p className="max-w-xs text-sm text-ink-soft">
-            Get an instant, data-driven read on your pipeline health and what to
+            Get an instant, data-driven read on your jobs health and what to
             do next.
           </p>
           <Button className="mt-4" size="sm" onClick={run}>
-            <Sparkles className="h-4 w-4" /> Analyze pipeline
+            <Sparkles className="h-4 w-4" /> Analyze jobs
           </Button>
         </div>
       ) : (

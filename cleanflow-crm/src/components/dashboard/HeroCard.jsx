@@ -4,12 +4,12 @@ import { currency } from "../../lib/format";
 
 /**
  * The "credit-card" hero from the reference, repurposed for the CRM: a green
- * gradient card surfacing total Pipeline Value with account-style framing.
+ * gradient card surfacing total Jobs Value with account-style framing.
  */
-export function HeroCard({ value = 0, label = "Pipeline value" }) {
+export function HeroCard({ value = 0, label = "Jobs value" }) {
   return (
     <Card className="p-6">
-      <SectionHeading title="Pipeline Goal" subtitle="Total deal value" to="/pipeline" />
+      <SectionHeading title="Jobs Goal" subtitle="Total deal value" to="/jobs" />
 
       <div className="brand-gradient relative mt-5 overflow-hidden rounded-2xl p-5 text-white shadow-[var(--shadow-soft)]">
         {/* Decorative glow */}
@@ -28,7 +28,7 @@ export function HeroCard({ value = 0, label = "Pipeline value" }) {
         </p>
 
         <div className="relative mt-6 flex items-center justify-between text-sm">
-          <span className="tracking-[0.2em] text-white/80">•••• PIPELINE</span>
+          <span className="tracking-[0.2em] text-white/80">•••• JOBS</span>
           <span className="text-white/70">LIVE</span>
         </div>
       </div>

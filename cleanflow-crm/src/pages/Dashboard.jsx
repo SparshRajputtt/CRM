@@ -40,7 +40,7 @@ import {
   Skeleton,
   Avatar,
 } from "../components/ui";
-import { analyticsApi, contactsApi, leadsApi, tasksApi } from "../lib/services";
+import { analyticsApi, customersApi, leadsApi, tasksApi } from "../lib/services";
 import { currency, shortDate, timeOf } from "../lib/format";
 import { STAGE_STYLES, PRIORITY_STYLES } from "../lib/constants";
 import { useAuth } from "../context/AuthContext";
@@ -52,14 +52,14 @@ const SOURCE_COLORS = ["#0ea5e9", "#38bdf8", "#0369a1", "#7dd3fc", "#0284c7", "#
 export default function Dashboard() {
   const { user } = useAuth();
   const [data, setData] = useState(null);
-  const [contacts, setContacts] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [leads, setLeads] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [range, setRange] = useState("monthly");
 
   useEffect(() => {
     analyticsApi.overview().then(setData).catch(() => setData(false));
-    contactsApi.list().then((res) => setContacts(res.contacts || [])).catch(() => {});
+    customersApi.list().then((res) => setCustomers(res.customers || [])).catch(() => {});
     leadsApi.list().then((res) => setLeads(res.leads || [])).catch(() => {});
     tasksApi.list().then((res) => setTasks(res.tasks || [])).catch(() => {});
   }, []);
@@ -98,7 +98,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-12">
         {/* ── Left column ───────────────────────────────── */}
         <div className="space-y-5 lg:col-span-3">
-          <HeroCard value={stats.pipelineValue} />
+          <HeroCard value={stats.jobsValue} />
 
           <Card className="p-5">
             <p className="text-sm text-ink-soft">Weekly Revenue</p>
@@ -130,7 +130,7 @@ export default function Dashboard() {
           </Card>
 
           <UpcomingTasks tasks={tasks} />
-          <TopContactsCard contacts={contacts} />
+          <TopCustomersCard customers={customers} />
         </div>
 
         {/* ── Center column ─────────────────────────────── */}
@@ -138,7 +138,7 @@ export default function Dashboard() {
           <Card className="p-6">
             <SectionHeading
               icon={CreditCard}
-              title="Pipeline Engagement"
+              title="Jobs Engagement"
               subtitle="New leads per month"
               action={
                 <Tabs
@@ -167,14 +167,14 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          <PipelineByStage pipeline={data?.pipeline || []} />
+          <JobsByStage jobs={data?.jobs || []} />
         </div>
 
         {/* ── Right column ──────────────────────────────── */}
         <div className="space-y-5 lg:col-span-3">
           {/* Revenue / balance card */}
           <Card className="p-6">
-            <SectionHeading title="Revenue Goal" subtitle="Closed-won total" to="/pipeline" />
+            <SectionHeading title="Revenue Goal" subtitle="Closed-won total" to="/jobs" />
             <p className="mt-4 text-center text-sm text-ink-soft">Total Won</p>
             <p className="text-center font-display text-3xl font-bold tracking-tight text-ink">
               {currency(stats.revenueWon)}
@@ -205,21 +205,21 @@ export default function Dashboard() {
   );
 }
 
-/* ── Pipeline by stage (funnel-style breakdown) ─────────────────────── */
-function PipelineByStage({ pipeline, className }) {
-  const maxValue = Math.max(...pipeline.map((s) => s.value), 1);
-  const totalValue = pipeline.reduce((sum, s) => sum + s.value, 0);
+/* ── Jobs by stage (funnel-style breakdown) ─────────────────────── */
+function JobsByStage({ jobs, className }) {
+  const maxValue = Math.max(...jobs.map((s) => s.value), 1);
+  const totalValue = jobs.reduce((sum, s) => sum + s.value, 0);
 
   return (
     <Card className={cn("p-6", className)}>
       <SectionHeading
         icon={Layers}
-        title="Pipeline by Stage"
+        title="Jobs by Stage"
         subtitle="Deal value across each stage"
-        to="/pipeline"
+        to="/jobs"
       />
       <div className="mt-5 space-y-4">
-        {pipeline.map((s) => {
+        {jobs.map((s) => {
           const style = STAGE_STYLES[s.stage] || STAGE_STYLES.New;
           const pct = totalValue ? Math.round((s.value / totalValue) * 100) : 0;
           return (
@@ -244,8 +244,8 @@ function PipelineByStage({ pipeline, className }) {
             </div>
           );
         })}
-        {pipeline.length === 0 && (
-          <p className="py-6 text-center text-sm text-ink-soft">No pipeline data yet.</p>
+        {jobs.length === 0 && (
+          <p className="py-6 text-center text-sm text-ink-soft">No jobs data yet.</p>
         )}
       </div>
     </Card>
@@ -552,16 +552,16 @@ function ActivityTable({ leads }) {
   );
 }
 
-/* ── Top contacts (avatar stack — the "Mandatory Payments" slot) ─────── */
-function TopContactsCard({ contacts }) {
-  const top = contacts.slice(0, 4);
-  const overflow = Math.max(contacts.length - top.length, 0);
+/* ── Top customers (avatar stack — the "Mandatory Payments" slot) ─────── */
+function TopCustomersCard({ customers }) {
+  const top = customers.slice(0, 4);
+  const overflow = Math.max(customers.length - top.length, 0);
 
   return (
     <Card className="p-6">
-      <SectionHeading title="Top Contacts" subtitle="Your key relationships" to="/contacts" />
-      {contacts.length === 0 ? (
-        <p className="mt-4 text-sm text-ink-soft">No contacts yet.</p>
+      <SectionHeading title="Top Customers" subtitle="Your key relationships" to="/customers" />
+      {customers.length === 0 ? (
+        <p className="mt-4 text-sm text-ink-soft">No customers yet.</p>
       ) : (
         <div className="mt-5 flex items-center justify-between">
           <div className="flex -space-x-3">
@@ -581,7 +581,7 @@ function TopContactsCard({ contacts }) {
             )}
           </div>
           <Link
-            to="/contacts"
+            to="/customers"
             className="text-sm font-medium text-brand-700 hover:underline"
           >
             View all

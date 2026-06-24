@@ -14,7 +14,7 @@ import Quotes from "./pages/Quotes";
 import Invoices from "./pages/Invoices";
 import Analytics from "./pages/Analytics";
 import Notes from "./pages/Notes";
-// import Tasks from "./pages/Tasks";
+import Tasks from "./pages/Tasks";
 import Settings from "./pages/Settings";
 
 /* Central route table. Auth routes are public; everything else is wrapped in
@@ -39,7 +39,7 @@ export default function App() {
         <Route path="/customers" element={<Customers />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/notes" element={<Notes />} />
-        {/* <Route path="/tasks" element={<Tasks />} /> */}
+        <Route path="/tasks" element={<Tasks />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
 

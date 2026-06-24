@@ -22,7 +22,7 @@ export default function Register() {
     setSubmitting(true);
     try {
       await registerUser(data);
-      toast.success("Account created — welcome to CleanFLow CRM! 🎉");
+      toast.success("Account created — welcome to CleanFlow CRM! 🎉");
       navigate("/", { replace: true });
     } catch (err) {
       toast.error(err.message || "Registration failed");
@@ -35,7 +35,7 @@ export default function Register() {
     <AuthShell>
       <h1 className="text-2xl font-bold text-ink">Create your account</h1>
       <p className="mt-1.5 text-sm text-ink-soft">
-        Start managing your pipeline in minutes.
+        Start managing your jobs in minutes.
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-4">
@@ -54,7 +54,7 @@ export default function Register() {
           <div className="relative">
             <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-soft" />
             <Input
-              placeholder="Time To Program"
+              placeholder="CleanFlow CRM"
               className="pl-9"
               {...register("company")}
             />

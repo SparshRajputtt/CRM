@@ -53,7 +53,7 @@ export function LeadFormDialog({ open, onClose, lead, onSaved }) {
       open={open}
       onClose={onClose}
       title={editing ? "Edit lead" : "New lead"}
-      description={editing ? "Update this lead's details." : "Add a lead to your pipeline."}
+      description={editing ? "Update this lead's details." : "Add a lead to your jobs."}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-2 gap-3">

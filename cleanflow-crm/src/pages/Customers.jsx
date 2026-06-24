@@ -36,12 +36,12 @@ import {
   DropdownItem,
   Spinner,
 } from "../components/ui";
-import { contactsApi } from "../lib/services";
+import { customersApi } from "../lib/services";
 import { relative, shortDate } from "../lib/format";
 import { cn } from "../lib/utils";
 
 /* ─── useFlip ─────────────────────────────────────────────────────────────────
-   FLIP animation: when the ordered list changes (e.g. a contact is starred and
+   FLIP animation: when the ordered list changes (e.g. a customer is starred and
    floats to the top), smoothly slide each card from its previous position to
    its new one. Reads element rects before/after the reorder and animates the
    inverse transform to zero. Respects prefers-reduced-motion.
@@ -88,68 +88,68 @@ function useFlip(dep) {
   return containerRef;
 }
 
-/* ─── Contacts page ──────────────────────────────────────────────────────────
+/* ─── Customers page ──────────────────────────────────────────────────────────
    Full CRUD management: KPI strip, tag chip filter bar, card/table views,
    drawer detail, add/edit dialog (react-hook-form), delete confirm.
    All filtering is client-side for instant response.
    ──────────────────────────────────────────────────────────────────────────── */
-export default function Contacts() {
+export default function Customers() {
   // null = loading, [] = empty, [...] = loaded
-  const [contacts, setContacts] = useState(null);
+  const [customers, setCustomers] = useState(null);
   const [filters, setFilters] = useState({ search: "", tag: "" });
   const [view, setView] = useState("grid"); // "grid" | "table"
 
   const [formOpen, setFormOpen] = useState(false);
-  const [editing, setEditing] = useState(null);   // contact being edited
-  const [selected, setSelected] = useState(null); // contact open in drawer
-  const [toDelete, setToDelete] = useState(null); // contact pending deletion
+  const [editing, setEditing] = useState(null);   // customer being edited
+  const [selected, setSelected] = useState(null); // customer open in drawer
+  const [toDelete, setToDelete] = useState(null); // customer pending deletion
   const [deleting, setDeleting] = useState(false);
   const [favLoading, setFavLoading] = useState({}); // { [id]: bool }
 
-  // Fetch all contacts and store them
+  // Fetch all customers and store them
   const load = () => {
-    setContacts(null);
-    contactsApi
+    setCustomers(null);
+    customersApi
       .list()
-      .then((res) => setContacts(res.contacts))
-      .catch(() => setContacts([]));
+      .then((res) => setCustomers(res.customers))
+      .catch(() => setCustomers([]));
   };
   useEffect(load, []);
 
   // ── Derived data ────────────────────────────────────────────────────
 
-  // Collect unique tags across all contacts for the chip filter row
+  // Collect unique tags across all customers for the chip filter row
   const allTags = useMemo(() => {
-    if (!contacts) return [];
+    if (!customers) return [];
     const set = new Set();
-    contacts.forEach((c) => (c.tags || []).forEach((t) => set.add(t)));
+    customers.forEach((c) => (c.tags || []).forEach((t) => set.add(t)));
     return Array.from(set).sort();
-  }, [contacts]);
+  }, [customers]);
 
-  // Per-tag counts (from all contacts, not just filtered) for live chip counts
+  // Per-tag counts (from all customers, not just filtered) for live chip counts
   const tagCounts = useMemo(() => {
-    const c = { All: contacts?.length || 0 };
+    const c = { All: customers?.length || 0 };
     allTags.forEach((t) => {
-      c[t] = (contacts || []).filter((contact) =>
-        (contact.tags || []).includes(t)
+      c[t] = (customers || []).filter((customer) =>
+        (customer.tags || []).includes(t)
       ).length;
     });
     return c;
-  }, [contacts, allTags]);
+  }, [customers, allTags]);
 
-  // KPI numbers computed from the full (unfiltered) contacts list
+  // KPI numbers computed from the full (unfiltered) customers list
   const kpis = useMemo(() => {
-    const list = contacts || [];
+    const list = customers || [];
     const favorites = list.filter((c) => c.favorite).length;
     const uniqueCompanies = new Set(list.map((c) => c.company).filter(Boolean)).size;
     const tagged = list.filter((c) => (c.tags || []).length > 0).length;
     return { total: list.length, favorites, companies: uniqueCompanies, tagged };
-  }, [contacts]);
+  }, [customers]);
 
   // Client-side filtering: search by name/email/company and by tag
   const filtered = useMemo(() => {
-    if (!contacts) return [];
-    return contacts.filter((c) => {
+    if (!customers) return [];
+    return customers.filter((c) => {
       if (filters.tag && !(c.tags || []).includes(filters.tag)) return false;
       if (filters.search) {
         const q = filters.search.toLowerCase();
@@ -161,7 +161,7 @@ export default function Contacts() {
       }
       return true;
     });
-  }, [contacts, filters]);
+  }, [customers, filters]);
 
   // Favorites float to the top; everything else keeps its relative order
   // (Array.prototype.sort is stable).
@@ -183,9 +183,9 @@ export default function Contacts() {
     setFormOpen(true);
   };
 
-  const openEdit = (contact) => {
+  const openEdit = (customer) => {
     setSelected(null);
-    setEditing(contact);
+    setEditing(customer);
     setFormOpen(true);
   };
 
@@ -193,35 +193,35 @@ export default function Contacts() {
 
   // Toggle favorite star — optimistic in-place update (no full reload, so the
   // grid doesn't unmount and the scroll position is preserved).
-  const toggleFavorite = async (e, contact) => {
+  const toggleFavorite = async (e, customer) => {
     e.stopPropagation();
-    if (favLoading[contact._id]) return;
-    const next = !contact.favorite;
-    setFavLoading((prev) => ({ ...prev, [contact._id]: true }));
+    if (favLoading[customer._id]) return;
+    const next = !customer.favorite;
+    setFavLoading((prev) => ({ ...prev, [customer._id]: true }));
     // Flip the star immediately in local state.
-    setContacts((prev) =>
-      (prev || []).map((c) => (c._id === contact._id ? { ...c, favorite: next } : c))
+    setCustomers((prev) =>
+      (prev || []).map((c) => (c._id === customer._id ? { ...c, favorite: next } : c))
     );
     try {
-      await contactsApi.update(contact._id, { favorite: next });
+      await customersApi.update(customer._id, { favorite: next });
     } catch (err) {
       // Revert on failure.
-      setContacts((prev) =>
+      setCustomers((prev) =>
         (prev || []).map((c) =>
-          c._id === contact._id ? { ...c, favorite: !next } : c
+          c._id === customer._id ? { ...c, favorite: !next } : c
         )
       );
       toast.error(err?.message || "Could not update favorite");
     } finally {
-      setFavLoading((prev) => ({ ...prev, [contact._id]: false }));
+      setFavLoading((prev) => ({ ...prev, [customer._id]: false }));
     }
   };
 
   const confirmDelete = async () => {
     setDeleting(true);
     try {
-      await contactsApi.remove(toDelete._id);
-      toast.success("Contact removed");
+      await customersApi.remove(toDelete._id);
+      toast.success("Customer removed");
       setToDelete(null);
       setSelected(null);
       load();
@@ -236,11 +236,11 @@ export default function Contacts() {
     <div className="space-y-6">
       {/* ── Page header ── */}
       <PageHeader
-        title="Contacts"
+        title="Customers"
         subtitle="Your people and professional relationships."
       >
         <Button onClick={openNew}>
-          <Plus className="h-4 w-4" /> Add contact
+          <Plus className="h-4 w-4" /> Add customer
         </Button>
       </PageHeader>
 
@@ -249,7 +249,7 @@ export default function Contacts() {
         <StatTile
           icon={Users}
           tint="bg-brand-50 text-brand-600"
-          label="Total contacts"
+          label="Total customers"
           value={kpis.total}
         />
         <StatTile
@@ -319,7 +319,7 @@ export default function Contacts() {
             )}
             <span className="text-sm text-ink-soft">
               <span className="font-semibold text-ink">{filtered.length}</span> of{" "}
-              {contacts?.length ?? 0}
+              {customers?.length ?? 0}
             </span>
             <ViewToggle view={view} onChange={setView} />
           </div>
@@ -327,23 +327,23 @@ export default function Contacts() {
       </Card>
 
       {/* ── Results — loading / empty / grid / table ── */}
-      {contacts === null ? (
+      {customers === null ? (
         <div className="flex items-center justify-center py-20">
           <Spinner />
         </div>
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={Contact2}
-          title={filtersActive ? "No contacts match" : "No contacts yet"}
+          title={filtersActive ? "No customers match" : "No customers yet"}
           description={
             filtersActive
               ? "Try different search terms or clear the tag filter."
-              : "Add your first contact to start building your network."
+              : "Add your first customer to start building your network."
           }
           action={
             !filtersActive ? (
               <Button onClick={openNew}>
-                <Plus className="h-4 w-4" /> Add contact
+                <Plus className="h-4 w-4" /> Add customer
               </Button>
             ) : null
           }
@@ -351,16 +351,16 @@ export default function Contacts() {
       ) : view === "grid" ? (
         /* ── Card grid view ── */
         <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {ordered.map((contact) => (
-            <ContactCard
-              key={contact._id}
-              contact={contact}
-              flipId={contact._id}
-              favLoading={!!favLoading[contact._id]}
+          {ordered.map((customer) => (
+            <CustomerCard
+              key={customer._id}
+              customer={customer}
+              flipId={customer._id}
+              favLoading={!!favLoading[customer._id]}
               onToggleFavorite={toggleFavorite}
-              onOpen={() => setSelected(contact)}
-              onEdit={() => openEdit(contact)}
-              onDelete={() => setToDelete(contact)}
+              onOpen={() => setSelected(customer)}
+              onEdit={() => openEdit(customer)}
+              onDelete={() => setToDelete(customer)}
             />
           ))}
         </div>
@@ -371,7 +371,7 @@ export default function Contacts() {
             <table className="w-full text-sm">
               <thead className="border-b border-line bg-surface-muted/40">
                 <tr className="text-left text-xs uppercase tracking-wide text-ink-soft">
-                  <th className="px-6 py-3.5 font-medium">Contact</th>
+                  <th className="px-6 py-3.5 font-medium">Customer</th>
                   <th className="px-6 py-3.5 font-medium">Title</th>
                   <th className="px-6 py-3.5 font-medium">Tags</th>
                   <th className="px-6 py-3.5 font-medium">Email</th>
@@ -380,16 +380,16 @@ export default function Contacts() {
                 </tr>
               </thead>
               <tbody ref={tableRef}>
-                {ordered.map((contact) => (
-                  <ContactTableRow
-                    key={contact._id}
-                    contact={contact}
-                    flipId={contact._id}
-                    favLoading={!!favLoading[contact._id]}
+                {ordered.map((customer) => (
+                  <CustomerTableRow
+                    key={customer._id}
+                    customer={customer}
+                    flipId={customer._id}
+                    favLoading={!!favLoading[customer._id]}
                     onToggleFavorite={toggleFavorite}
-                    onOpen={() => setSelected(contact)}
-                    onEdit={() => openEdit(contact)}
-                    onDelete={() => setToDelete(contact)}
+                    onOpen={() => setSelected(customer)}
+                    onEdit={() => openEdit(customer)}
+                    onDelete={() => setToDelete(customer)}
                   />
                 ))}
               </tbody>
@@ -399,18 +399,18 @@ export default function Contacts() {
       )}
 
       {/* ── Detail Drawer ── */}
-      <ContactDrawer
+      <CustomerDrawer
         open={Boolean(selected)}
-        contact={selected}
+        customer={selected}
         onClose={() => setSelected(null)}
         onEdit={() => openEdit(selected)}
         onDelete={() => setToDelete(selected)}
       />
 
       {/* ── Add / Edit Dialog ── */}
-      <ContactFormDialog
+      <CustomerFormDialog
         open={formOpen}
-        contact={editing}
+        customer={editing}
         onClose={() => setFormOpen(false)}
         onSaved={handleSaved}
       />
@@ -421,9 +421,9 @@ export default function Contacts() {
         onClose={() => setToDelete(null)}
         onConfirm={confirmDelete}
         loading={deleting}
-        title="Remove this contact?"
+        title="Remove this customer?"
         description={`"${toDelete?.name}" will be permanently deleted and cannot be recovered.`}
-        confirmLabel="Remove contact"
+        confirmLabel="Remove customer"
       />
     </div>
   );
@@ -511,12 +511,12 @@ function ViewToggle({ view, onChange }) {
   );
 }
 
-/* ─── ContactCard ────────────────────────────────────────────────────────────
-   Single premium contact tile for the card grid view.
+/* ─── CustomerCard ────────────────────────────────────────────────────────────
+   Single premium customer tile for the card grid view.
    Shows avatar, name, title/company, favorite toggle, tags, email/phone.
    ──────────────────────────────────────────────────────────────────────────── */
-function ContactCard({
-  contact,
+function CustomerCard({
+  customer,
   flipId,
   favLoading,
   onToggleFavorite,
@@ -532,15 +532,15 @@ function ContactCard({
     >
       {/* Favorite star — top right, stopPropagation so card click doesn't fire */}
       <button
-        onClick={(e) => onToggleFavorite(e, contact)}
+        onClick={(e) => onToggleFavorite(e, customer)}
         disabled={favLoading}
-        aria-label={contact.favorite ? "Unmark favorite" : "Mark as favorite"}
+        aria-label={customer.favorite ? "Unmark favorite" : "Mark as favorite"}
         className="absolute right-4 top-4 rounded-lg p-1 text-ink-soft/40 transition hover:text-amber-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
       >
         <Star
           className={cn(
             "h-4 w-4 transition",
-            contact.favorite ? "fill-amber-400 text-amber-400" : ""
+            customer.favorite ? "fill-amber-400 text-amber-400" : ""
           )}
         />
       </button>
@@ -568,23 +568,23 @@ function ContactCard({
 
       {/* Avatar + identity */}
       <div className="flex items-start gap-3 pr-8">
-        <Avatar name={contact.name} size="md" />
+        <Avatar name={customer.name} size="md" />
         <div className="min-w-0">
           <p className="font-semibold text-ink leading-tight truncate">
-            {contact.name}
+            {customer.name}
           </p>
-          {(contact.title || contact.company) && (
+          {(customer.title || customer.company) && (
             <p className="mt-0.5 text-sm text-ink-soft truncate">
-              {[contact.title, contact.company].filter(Boolean).join(" · ")}
+              {[customer.title, customer.company].filter(Boolean).join(" · ")}
             </p>
           )}
         </div>
       </div>
 
       {/* Tags */}
-      {contact.tags?.length > 0 && (
+      {customer.tags?.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
-          {contact.tags.slice(0, 3).map((tag) => (
+          {customer.tags.slice(0, 3).map((tag) => (
             <Badge
               key={tag}
               className="bg-brand-50 text-brand-700 text-[11px] px-2 py-0.5"
@@ -592,26 +592,26 @@ function ContactCard({
               {tag}
             </Badge>
           ))}
-          {contact.tags.length > 3 && (
+          {customer.tags.length > 3 && (
             <Badge className="bg-surface-muted text-ink-soft text-[11px] px-2 py-0.5">
-              +{contact.tags.length - 3}
+              +{customer.tags.length - 3}
             </Badge>
           )}
         </div>
       )}
 
-      {/* Contact info rows */}
+      {/* customer info rows */}
       <div className="mt-3 space-y-1.5">
-        {contact.email && (
+        {customer.email && (
           <div className="flex items-center gap-2 text-sm text-ink-soft min-w-0">
             <Mail className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{contact.email}</span>
+            <span className="truncate">{customer.email}</span>
           </div>
         )}
-        {contact.phone && (
+        {customer.phone && (
           <div className="flex items-center gap-2 text-sm text-ink-soft">
             <Phone className="h-3.5 w-3.5 shrink-0" />
-            <span>{contact.phone}</span>
+            <span>{customer.phone}</span>
           </div>
         )}
       </div>
@@ -619,11 +619,11 @@ function ContactCard({
   );
 }
 
-/* ─── ContactTableRow ────────────────────────────────────────────────────────
+/* ─── CustomerTableRow ────────────────────────────────────────────────────────
    Single row for the table view.
    ──────────────────────────────────────────────────────────────────────────── */
-function ContactTableRow({
-  contact,
+function CustomerTableRow({
+  customer,
   flipId,
   favLoading,
   onToggleFavorite,
@@ -637,14 +637,14 @@ function ContactTableRow({
       onClick={onOpen}
       className="group cursor-pointer border-b border-line last:border-0 transition hover:bg-surface-muted/50"
     >
-      {/* Contact (avatar + name + company) */}
+      {/* Customer (avatar + name + company) */}
       <td className="px-6 py-3.5">
         <div className="flex items-center gap-3">
-          <Avatar name={contact.name} size="sm" />
+          <Avatar name={customer.name} size="sm" />
           <div>
-            <p className="font-medium text-ink">{contact.name}</p>
+            <p className="font-medium text-ink">{customer.name}</p>
             <p className="text-xs text-ink-soft">
-              {contact.company || contact.email || "—"}
+              {customer.company || customer.email || "—"}
             </p>
           </div>
         </div>
@@ -652,13 +652,13 @@ function ContactTableRow({
 
       {/* Title */}
       <td className="px-6 py-3.5 text-sm text-ink-soft">
-        {contact.title || "—"}
+        {customer.title || "—"}
       </td>
 
       {/* Tags */}
       <td className="px-6 py-3.5">
         <div className="flex flex-wrap gap-1">
-          {(contact.tags || []).slice(0, 2).map((tag) => (
+          {(customer.tags || []).slice(0, 2).map((tag) => (
             <Badge
               key={tag}
               className="bg-brand-50 text-brand-700 text-[11px] px-2 py-0.5"
@@ -666,12 +666,12 @@ function ContactTableRow({
               {tag}
             </Badge>
           ))}
-          {(contact.tags || []).length > 2 && (
+          {(customer.tags || []).length > 2 && (
             <Badge className="bg-surface-muted text-ink-soft text-[11px] px-2 py-0.5">
-              +{contact.tags.length - 2}
+              +{customer.tags.length - 2}
             </Badge>
           )}
-          {!(contact.tags?.length) && (
+          {!(customer.tags?.length) && (
             <span className="text-xs text-ink-soft/50">—</span>
           )}
         </div>
@@ -679,13 +679,13 @@ function ContactTableRow({
 
       {/* Email */}
       <td className="px-6 py-3.5 text-sm text-ink-soft">
-        {contact.email ? (
+        {customer.email ? (
           <a
-            href={`mailto:${contact.email}`}
+            href={`mailto:${customer.email}`}
             onClick={(e) => e.stopPropagation()}
             className="hover:text-brand-700 hover:underline transition"
           >
-            {contact.email}
+            {customer.email}
           </a>
         ) : (
           "—"
@@ -694,7 +694,7 @@ function ContactTableRow({
 
       {/* Phone */}
       <td className="px-6 py-3.5 text-sm text-ink-soft">
-        {contact.phone || "—"}
+        {customer.phone || "—"}
       </td>
 
       {/* Actions */}
@@ -702,15 +702,15 @@ function ContactTableRow({
         <div className="flex items-center justify-end gap-1">
           {/* Favorite star */}
           <button
-            onClick={(e) => onToggleFavorite(e, contact)}
+            onClick={(e) => onToggleFavorite(e, customer)}
             disabled={favLoading}
-            aria-label={contact.favorite ? "Unmark favorite" : "Mark as favorite"}
+            aria-label={customer.favorite ? "Unmark favorite" : "Mark as favorite"}
             className="rounded-lg p-1.5 text-ink-soft/40 transition hover:text-amber-400"
           >
             <Star
               className={cn(
                 "h-4 w-4 transition",
-                contact.favorite ? "fill-amber-400 text-amber-400" : ""
+                customer.favorite ? "fill-amber-400 text-amber-400" : ""
               )}
             />
           </button>
@@ -734,31 +734,31 @@ function ContactTableRow({
   );
 }
 
-/* ─── ContactDrawer ──────────────────────────────────────────────────────────
-   Right slide-over detail panel for a single contact.
+/* ─── CustomerDrawer ──────────────────────────────────────────────────────────
+   Right slide-over detail panel for a single customer.
    ──────────────────────────────────────────────────────────────────────────── */
-function ContactDrawer({ open, contact, onClose, onEdit, onDelete }) {
-  if (!contact) return null;
+function CustomerDrawer({ open, customer, onClose, onEdit, onDelete }) {
+  if (!customer) return null;
 
   return (
-    <Drawer open={open} onClose={onClose} title="Contact details">
+    <Drawer open={open} onClose={onClose} title="customer details">
       <div className="space-y-6">
         {/* Identity hero */}
         <div className="flex items-center gap-4">
-          <Avatar name={contact.name} size="lg" />
+          <Avatar name={customer.name} size="lg" />
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-semibold text-ink">{contact.name}</h2>
-              {contact.favorite && (
+              <h2 className="text-xl font-semibold text-ink">{customer.name}</h2>
+              {customer.favorite && (
                 <Star className="h-4 w-4 fill-amber-400 text-amber-400 shrink-0" />
               )}
             </div>
-            {(contact.title || contact.company) && (
+            {(customer.title || customer.company) && (
               <p className="text-sm text-ink-soft mt-0.5">
-                {[contact.title, contact.company].filter(Boolean).join(" · ")}
+                {[customer.title, customer.company].filter(Boolean).join(" · ")}
               </p>
             )}
-            {contact.favorite && (
+            {customer.favorite && (
               <Badge className="mt-1.5 bg-amber-50 text-amber-700 text-[11px]">
                 Favorite
               </Badge>
@@ -766,45 +766,45 @@ function ContactDrawer({ open, contact, onClose, onEdit, onDelete }) {
           </div>
         </div>
 
-        {/* Contact fields */}
+        {/* Customer fields */}
         <div className="rounded-2xl border border-line divide-y divide-line">
-          {contact.email && (
+          {customer.email && (
             <DrawerRow icon={<Mail className="h-4 w-4" />} label="Email">
               <a
-                href={`mailto:${contact.email}`}
+                href={`mailto:${customer.email}`}
                 className="text-brand-700 hover:underline"
                 onClick={(e) => e.stopPropagation()}
               >
-                {contact.email}
+                {customer.email}
               </a>
             </DrawerRow>
           )}
-          {contact.phone && (
+          {customer.phone && (
             <DrawerRow icon={<Phone className="h-4 w-4" />} label="Phone">
               <a
-                href={`tel:${contact.phone}`}
+                href={`tel:${customer.phone}`}
                 className="text-brand-700 hover:underline"
                 onClick={(e) => e.stopPropagation()}
               >
-                {contact.phone}
+                {customer.phone}
               </a>
             </DrawerRow>
           )}
-          {contact.company && (
+          {customer.company && (
             <DrawerRow icon={<Building2 className="h-4 w-4" />} label="Company">
-              <span className="text-ink">{contact.company}</span>
+              <span className="text-ink">{customer.company}</span>
             </DrawerRow>
           )}
         </div>
 
         {/* Tags */}
-        {contact.tags?.length > 0 && (
+        {customer.tags?.length > 0 && (
           <div>
             <div className="flex items-center gap-1.5 text-xs font-medium text-ink-soft uppercase tracking-wide mb-2">
               <Tag className="h-3.5 w-3.5" /> Tags
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {contact.tags.map((tag) => (
+              {customer.tags.map((tag) => (
                 <Badge key={tag} className="bg-brand-50 text-brand-700">
                   {tag}
                 </Badge>
@@ -814,21 +814,21 @@ function ContactDrawer({ open, contact, onClose, onEdit, onDelete }) {
         )}
 
         {/* Notes */}
-        {contact.notes && (
+        {customer.notes && (
           <div>
             <p className="text-xs font-medium text-ink-soft uppercase tracking-wide mb-2">
               Notes
             </p>
             <p className="text-sm text-ink leading-relaxed whitespace-pre-line rounded-xl bg-surface-muted px-4 py-3">
-              {contact.notes}
+              {customer.notes}
             </p>
           </div>
         )}
 
         {/* Meta */}
         <p className="text-xs text-ink-soft">
-          Added {shortDate(contact.createdAt)}{" "}
-          <span className="opacity-60">({relative(contact.createdAt)})</span>
+          Added {shortDate(customer.createdAt)}{" "}
+          <span className="opacity-60">({relative(customer.createdAt)})</span>
         </p>
 
         {/* Action buttons */}
@@ -856,12 +856,12 @@ function DrawerRow({ icon, label, children }) {
   );
 }
 
-/* ─── ContactFormDialog ──────────────────────────────────────────────────────
+/* ─── CustomerFormDialog ──────────────────────────────────────────────────────
    Add / Edit dialog backed by react-hook-form.
    Tags are entered as a comma-separated string and split on submit.
    ──────────────────────────────────────────────────────────────────────────── */
-function ContactFormDialog({ open, contact, onClose, onSaved }) {
-  const isEdit = Boolean(contact);
+function CustomerFormDialog({ open, customer, onClose, onSaved }) {
+  const isEdit = Boolean(customer && customer._id);
 
   const {
     register,
@@ -874,16 +874,16 @@ function ContactFormDialog({ open, contact, onClose, onSaved }) {
   useEffect(() => {
     if (open) {
       reset(
-        contact
+        customer
           ? {
-              name: contact.name || "",
-              title: contact.title || "",
-              company: contact.company || "",
-              email: contact.email || "",
-              phone: contact.phone || "",
-              tags: (contact.tags || []).join(", "),
-              notes: contact.notes || "",
-              favorite: contact.favorite || false,
+              name: customer.name || "",
+              title: customer.title || "",
+              company: customer.company || "",
+              email: customer.email || "",
+              phone: customer.phone || "",
+              tags: (customer.tags || []).join(", "),
+              notes: customer.notes || "",
+              favorite: customer.favorite || false,
             }
           : {
               name: "",
@@ -897,7 +897,7 @@ function ContactFormDialog({ open, contact, onClose, onSaved }) {
             }
       );
     }
-  }, [open, contact, reset]);
+  }, [open, customer, reset]);
 
   const onSubmit = async (values) => {
     // Parse comma-separated tags into a clean array
@@ -912,11 +912,11 @@ function ContactFormDialog({ open, contact, onClose, onSaved }) {
 
     try {
       if (isEdit) {
-        await contactsApi.update(contact._id, payload);
-        toast.success("Contact updated");
+        await customersApi.update(customer._id, payload);
+        toast.success("Customer updated");
       } else {
-        await contactsApi.create(payload);
-        toast.success("Contact added");
+        await customersApi.create(payload);
+        toast.success("Customer added");
       }
       onSaved();
       onClose();
@@ -929,11 +929,11 @@ function ContactFormDialog({ open, contact, onClose, onSaved }) {
     <Dialog
       open={open}
       onClose={onClose}
-      title={isEdit ? "Edit contact" : "New contact"}
+      title={isEdit ? "Edit customer" : "New customer"}
       description={
         isEdit
           ? "Update the details below."
-          : "Fill in the details to add a new contact."
+          : "Fill in the details to add a new customer."
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
@@ -1008,7 +1008,7 @@ function ContactFormDialog({ open, contact, onClose, onSaved }) {
           <div>
             <p className="text-sm font-medium text-ink">Mark as favorite</p>
             <p className="text-xs text-ink-soft">
-              Starred contacts appear highlighted in your grid.
+              Starred customers appear highlighted in your grid.
             </p>
           </div>
           <Star className="ml-auto h-4 w-4 text-amber-400" />
@@ -1025,7 +1025,7 @@ function ContactFormDialog({ open, contact, onClose, onSaved }) {
             Cancel
           </Button>
           <Button type="submit" className="flex-1" loading={isSubmitting}>
-            {isEdit ? "Save changes" : "Add contact"}
+            {isEdit ? "Save changes" : "Add customer"}
           </Button>
         </div>
       </form>

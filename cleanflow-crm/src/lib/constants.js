@@ -3,7 +3,7 @@
 
 export const LEAD_STAGES = ["New", "Qualified", "Proposal", "Won", "Lost"];
 
-export const PIPELINE_STAGES = ["New", "Qualified", "Proposal", "Won", "Lost"];
+export const JOB_STAGES = ["New", "Qualified", "Proposal", "Won", "Lost"];
 
 export const LEAD_PRIORITIES = ["Low", "Medium", "High"];
 

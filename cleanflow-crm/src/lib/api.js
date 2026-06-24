@@ -2,7 +2,7 @@
 
 /* localStorage key for the auth token — used by AuthContext (and by the real
    API client below, once enabled). */
-export const TOKEN_KEY = "ttp_crm_token";
+export const TOKEN_KEY = "cleanflow_crm_token";
 
 /* ─────────────────────────────────────────────────────────────────────────
    🔌 BACKEND INTEGRATION — currently DISABLED for the UI-only boilerplate.

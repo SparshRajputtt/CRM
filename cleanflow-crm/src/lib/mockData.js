@@ -13,10 +13,10 @@ const today = () => new Date().toISOString();
 
 export const mockUser = {
   id: "u1",
-  name: "Alex Carter",
-  email: "alex@timetoprogram.com",
+  name: "Sparsh Rajput",
+  email: "alex@cleanflow.com",
   role: "owner",
-  company: "Time To Program",
+  company: "CleanFlow CRM",
   avatar: "",
   createdAt: daysAgo(240),
 };
@@ -24,19 +24,19 @@ export const mockUser = {
 /* Each maker returns a FRESH array so the in-memory store can be reset cleanly. */
 export const makeLeads = () => [
   lead("l1", "Dribbble Design", "Acme Corp", "New", "High", "Website", 89345, 8),
-  lead("l2", "Google Pay", "Globex", "Qualified", "High", "Referral", 124000, 20),
+  lead("l2", "Google Pay", "Globex", "Contacted", "High", "Referral", 124000, 20),
   lead("l3", "Amazon Shopping", "Initech", "Proposal", "Medium", "Cold Outreach", 32123, 35),
   lead("l4", "Stripe", "Umbrella Co", "Won", "High", "Event", 76500, 60),
   lead("l5", "Notion", "Soylent", "New", "Low", "Social", 12400, 4),
-  lead("l6", "Figma", "Hooli", "Qualified", "Medium", "Website", 54000, 14),
+  lead("l6", "Figma", "Hooli", "Contacted", "Medium", "Website", 54000, 14),
   lead("l7", "Linear", "Pied Piper", "Proposal", "High", "Referral", 98000, 28),
   lead("l8", "Slack", "Vehement", "Lost", "Low", "Cold Outreach", 21000, 95),
   lead("l9", "Vercel", "Massive Dynamic", "Won", "High", "Referral", 143000, 110),
-  lead("l10", "Airtable", "Wayne Ent.", "Qualified", "High", "Event", 67000, 18),
+  lead("l10", "Airtable", "Wayne Ent.", "Contacted", "High", "Event", 67000, 18),
   lead("l11", "Datadog", "Stark Industries", "New", "Medium", "Website", 45000, 2),
   lead("l12", "Snowflake", "Cyberdyne", "Proposal", "High", "Referral", 152000, 48),
   lead("l13", "HubSpot", "Tyrell Corp", "Won", "Medium", "Event", 88000, 150),
-  lead("l14", "Asana", "Aperture Labs", "Qualified", "Low", "Social", 30000, 22),
+  lead("l14", "Asana", "Aperture Labs", "Contacted", "Low", "Social", 30000, 22),
   lead("l15", "Zoom", "Oscorp", "New", "Medium", "Cold Outreach", 26000, 6),
   lead("l16", "GitLab", "LexCorp", "Lost", "Low", "Website", 18000, 70),
 ];
@@ -57,7 +57,7 @@ function lead(_id, name, company, status, priority, source, value, ageDays) {
     notes:
       status === "Won"
         ? "Closed — annual contract signed."
-        : "Active opportunity in the pipeline.",
+        : "Active opportunity in the jobs.",
     tags: ["saas"],
     order: 0,
     aiSummary: "",
@@ -67,20 +67,20 @@ function lead(_id, name, company, status, priority, source, value, ageDays) {
   };
 }
 
-export const makeContacts = () => [
-  contact("c1", "Olivia Bennett", "VP of Sales", "Acme Corp", ["decision-maker", "warm"], true),
-  contact("c2", "Noah Carter", "CTO", "Globex", ["technical", "champion"], true),
-  contact("c3", "Emma Walsh", "Procurement Manager", "Initech", ["finance"], false),
-  contact("c4", "Liam Foster", "Founder", "Umbrella Co", ["executive"], false),
-  contact("c5", "Ava Mitchell", "Head of Operations", "Hooli", ["warm"], false),
-  contact("c6", "Ethan Brooks", "Product Lead", "Pied Piper", ["champion", "technical"], true),
-  contact("c7", "Sophia Reed", "Marketing Director", "Wayne Ent.", ["influencer"], false),
-  contact("c8", "Mason Hayes", "CFO", "Cyberdyne", ["finance", "executive"], false),
-  contact("c9", "Isabella Diaz", "Head of Growth", "Stark Industries", ["vip", "warm"], false),
-  contact("c10", "Lucas Park", "Engineering Manager", "Tyrell Corp", ["technical"], false),
+export const makeCustomers = () => [
+  customers("c1", "Olivia Bennett", "VP of Sales", "Acme Corp", ["decision-maker", "warm"], true),
+  customers("c2", "Noah Carter", "CTO", "Globex", ["technical", "champion"], true),
+  customers("c3", "Emma Walsh", "Procurement Manager", "Initech", ["finance"], false),
+  customers("c4", "Liam Foster", "Founder", "Umbrella Co", ["executive"], false),
+  customers("c5", "Ava Mitchell", "Head of Operations", "Hooli", ["warm"], false),
+  customers("c6", "Ethan Brooks", "Product Lead", "Pied Piper", ["champion", "technical"], true),
+  customers("c7", "Sophia Reed", "Marketing Director", "Wayne Ent.", ["influencer"], false),
+  customers("c8", "Mason Hayes", "CFO", "Cyberdyne", ["finance", "executive"], false),
+  customers("c9", "Isabella Diaz", "Head of Growth", "Stark Industries", ["vip", "warm"], false),
+  customers("c10", "Lucas Park", "Engineering Manager", "Tyrell Corp", ["technical"], false),
 ];
 
-function contact(_id, name, title, company, tags, favorite) {
+function customers(_id, name, title, company, tags, favorite) {
   return {
     _id,
     name,
@@ -92,7 +92,7 @@ function contact(_id, name, title, company, tags, favorite) {
     phone: `+1 555 0${100 + parseInt(_id.slice(1), 10)}`,
     tags,
     favorite,
-    notes: favorite ? "Primary point of contact." : "",
+    notes: favorite ? "Primary point of customer contact." : "",
     createdAt: daysAgo(parseInt(_id.slice(1), 10) * 7),
   };
 }
@@ -111,7 +111,7 @@ export const makeNotes = () => [
 ];
 
 function note(_id, content, lead, pinned, ageDays) {
-  return { _id, content, lead, contact: null, pinned, createdAt: daysAgo(ageDays) };
+  return { _id, content, lead, customer: null, pinned, createdAt: daysAgo(ageDays) };
 }
 
 export const makeTasks = () => [
@@ -136,7 +136,7 @@ function task(_id, title, priority, status, dueDate, relatedLead) {
     status,
     priority,
     relatedLead,
-    relatedContact: null,
+    relatedCustomer: null,
     completedAt: status === "Completed" ? daysAgo(1) : null,
     createdAt: daysAgo(parseInt(_id.slice(1), 10) * 2),
   };
@@ -168,7 +168,7 @@ export const mockAiEmail = {
 
 export const mockAiInsights = {
   success: true,
-  headline: "Pipeline is healthy, but proposals are stalling at the redline stage.",
+  headline: "Jobs is healthy, but proposals are stalling at the redline stage.",
   insights: [
     "Qualified-to-Proposal conversion is strong at 64%.",
     "Three high-value deals have sat in Proposal for over 30 days.",
