@@ -6,6 +6,7 @@ import {
   useSensor,
   useSensors,
   closestCorners,
+  rectIntersection,
   useDroppable,
 } from "@dnd-kit/core";
 import {
@@ -15,7 +16,15 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Sparkles, GripVertical, Building2, TrendingUp, Layers, Target, DollarSign } from "lucide-react";
+import {
+  Sparkles,
+  GripVertical,
+  Building2,
+  TrendingUp,
+  Layers,
+  Target,
+  DollarSign,
+} from "lucide-react";
 import { PageHeader } from "../components/common/PageHeader";
 import { Spinner, Avatar, Badge, Card } from "../components/ui";
 import { leadsApi, aiApi } from "../lib/services";
@@ -37,7 +46,7 @@ export default function Jobs() {
   const [activeId, setActiveId] = useState(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
   );
 
   useEffect(() => {
@@ -50,32 +59,67 @@ export default function Jobs() {
   if (!board) return <Spinner />;
 
   const findContainer = (id) => {
+    // 1. Direct match: If the ID is explicitly one of our job stages, return it immediately
+    if (JOB_STAGES.includes(id)) return id;
+    // 2. Object key fallback
     if (id in board) return id;
-    return JOB_STAGES.find((s) => board[s].some((l) => l._id === id));
+    // 3. Card match: Search inside the columns to see which one holds this card ID
+    return JOB_STAGES.find((s) =>
+      board[s]?.some((l) => l._id === id || l.id === id),
+    );
   };
 
   const activeLead = activeId
-    ? Object.values(board).flat().find((l) => l._id === activeId)
+    ? Object.values(board)
+        .flat()
+        .find((l) => l._id === activeId)
     : null;
 
   /* Move cards between columns live as the user drags over them. */
+  /* Move cards between columns live as the user drags over them cleanly. */
   const handleDragOver = ({ active, over }) => {
     if (!over) return;
-    const from = findContainer(active.id);
-    const to = findContainer(over.id);
+
+    const activeId = active.id;
+    const overId = over.id;
+
+    const from = findContainer(activeId);
+    const to = findContainer(overId);
+
+    // 1. STRICT GUARD: If columns are unidentifiable or identical, halt state mutation completely.
     if (!from || !to || from === to) return;
 
     setBoard((prev) => {
-      const fromItems = [...prev[from]];
-      const toItems = [...prev[to]];
-      const idx = fromItems.findIndex((l) => l._id === active.id);
+      // Create fresh, un-mutated copies of the column item arrays
+      const fromItems = prev[from] ? [...prev[from]] : [];
+      const toItems = prev[to] ? [...prev[to]] : [];
+
+      const idx = fromItems.findIndex((l) => l._id === activeId);
       if (idx === -1) return prev;
-      const [moved] = fromItems.splice(idx, 1);
-      moved.status = to;
-      // Insert near the hovered card (or append if hovering the column).
-      const overIdx = toItems.findIndex((l) => l._id === over.id);
-      toItems.splice(overIdx === -1 ? toItems.length : overIdx, 0, moved);
-      return { ...prev, [from]: fromItems, [to]: toItems };
+
+      const itemToMove = fromItems[idx];
+
+      // 2. IMMUTABLE DEEP-COPY: Prevent multi-render race condition memory leaking
+      const moved = {
+        ...itemToMove,
+        status: to, // Cleanly overwrite status string immutably
+      };
+
+      // Remove original pointer from origin column array
+      fromItems.splice(idx, 1);
+
+      // 3. SECURE INSERTION INDEX
+      const overIdx = toItems.findIndex((l) => l._id === overId);
+      const insertIdx = overIdx === -1 ? toItems.length : overIdx;
+
+      // Insert our immutably cloned object copy
+      toItems.splice(insertIdx, 0, moved);
+
+      return {
+        ...prev,
+        [from]: fromItems,
+        [to]: toItems,
+      };
     });
   };
 
@@ -91,14 +135,16 @@ export default function Jobs() {
       const oldIdx = items.findIndex((l) => l._id === active.id);
       const newIdx = items.findIndex((l) => l._id === over.id);
       const reordered =
-        oldIdx !== -1 && newIdx !== -1 ? arrayMove(items, oldIdx, newIdx) : items;
+        oldIdx !== -1 && newIdx !== -1
+          ? arrayMove(items, oldIdx, newIdx)
+          : items;
       const next = { ...prev, [container]: reordered };
 
       // Build the persistence payload across all affected columns.
       const updates = [];
       JOB_STAGES.forEach((stage) => {
         next[stage].forEach((l, order) =>
-          updates.push({ id: l._id, status: stage, order })
+          updates.push({ id: l._id, status: stage, order }),
         );
       });
       leadsApi.reorder(updates).catch(() => toast.error("Could not save jobs"));
@@ -109,11 +155,16 @@ export default function Jobs() {
   /* ── KPI computations ─────────────────────────────────────────────── */
   const allLeads = Object.values(board).flat();
   const totalValue = allLeads.reduce((s, l) => s + (l.value || 0), 0);
-  const openDeals = allLeads.filter((l) => l.status !== "Won" && l.status !== "Lost");
-  const wonLeads = allLeads.filter((l) => l.status === "Won");
+
+  // CHANGED: Match your new stages ("Completed" and "Paid") instead of "Won" and "Lost"
+  const openDeals = allLeads.filter(
+    (l) => l.status !== "Completed" && l.status !== "Paid",
+  );
+  const wonLeads = allLeads.filter((l) => l.status === "Paid");
   const wonValue = wonLeads.reduce((s, l) => s + (l.value || 0), 0);
-  const closedCount = wonLeads.length + (board.Lost?.length || 0);
-  const winRate = closedCount > 0 ? Math.round((wonLeads.length / closedCount) * 100) : 0;
+  const closedCount = wonLeads.length + (board["Completed"]?.length || 0);
+  const winRate =
+    closedCount > 0 ? Math.round((wonLeads.length / closedCount) * 100) : 0;
 
   return (
     <div className="space-y-6">
@@ -152,7 +203,7 @@ export default function Jobs() {
 
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={rectIntersection}
         onDragStart={({ active }) => setActiveId(active.id)}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
@@ -177,7 +228,12 @@ function StatTile({ icon: Icon, label, value, tint }) {
   return (
     <Card className="p-4">
       <div className="flex items-center gap-3">
-        <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl", tint)}>
+        <div
+          className={cn(
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl",
+            tint,
+          )}
+        >
           <Icon className="h-5 w-5" />
         </div>
         <div className="min-w-0">
@@ -219,11 +275,13 @@ function Column({ stage, leads }) {
         ref={setNodeRef}
         className={cn(
           "flex min-h-[60vh] flex-1 flex-col gap-3 rounded-3xl border-2 border-dashed border-transparent bg-surface-muted/60 p-3 transition",
-          isOver && "border-brand-300 bg-brand-50/60"
+          isOver && "border-brand-300 bg-brand-50/60",
         )}
       >
+        {/* Change your SortableContext setup to this: */}
         <SortableContext
-          items={leads.map((l) => l._id)}
+          // If leads is empty, fall back to an array containing just the stage ID string (e.g., ["On Hold"])
+          items={leads.length > 0 ? leads.map((l) => l._id) : [stage]}
           strategy={verticalListSortingStrategy}
         >
           {leads.map((lead) => (
@@ -231,7 +289,9 @@ function Column({ stage, leads }) {
           ))}
         </SortableContext>
         {leads.length === 0 && (
-          <p className="mt-6 text-center text-xs text-ink-soft">Drop leads here</p>
+          <p className="mt-6 text-center text-xs text-ink-soft">
+            Drop leads here
+          </p>
         )}
       </div>
     </div>
@@ -240,8 +300,14 @@ function Column({ stage, leads }) {
 
 /* ── Sortable card wrapper ──────────────────────────────────────────── */
 function SortableCard({ lead }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: lead._id });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: lead._id });
 
   return (
     <div
@@ -279,7 +345,9 @@ function LeadCard({ lead, dragHandle, overlay }) {
     <div
       className={cn(
         "group rounded-2xl bg-surface p-3.5 shadow-[var(--shadow-soft)] transition border border-line/60",
-        overlay ? "shadow-[var(--shadow-pop)] rotate-2" : "hover:shadow-[var(--shadow-card)]"
+        overlay
+          ? "shadow-[var(--shadow-pop)] rotate-2"
+          : "hover:shadow-[var(--shadow-card)]",
       )}
     >
       {/* Name / company row + drag handle */}
@@ -287,7 +355,9 @@ function LeadCard({ lead, dragHandle, overlay }) {
         <div className="flex items-center gap-2.5">
           <Avatar name={lead.name} size="sm" />
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-ink">{lead.name}</p>
+            <p className="truncate text-sm font-semibold text-ink">
+              {lead.name}
+            </p>
             <p className="flex items-center gap-1 truncate text-xs text-ink-soft">
               <Building2 className="h-3 w-3 shrink-0" />
               {lead.company || "—"}
@@ -308,8 +378,12 @@ function LeadCard({ lead, dragHandle, overlay }) {
 
       {/* Value + priority */}
       <div className="mt-3 flex items-center justify-between">
-        <span className="text-sm font-bold text-ink">{currency(lead.value)}</span>
-        <Badge className={PRIORITY_STYLES[lead.priority]}>{lead.priority}</Badge>
+        <span className="text-sm font-bold text-ink">
+          {currency(lead.value)}
+        </span>
+        <Badge className={PRIORITY_STYLES[lead.priority]}>
+          {lead.priority}
+        </Badge>
       </div>
 
       {/* AI suggest button — appears on hover, hidden in DragOverlay */}
@@ -319,7 +393,9 @@ function LeadCard({ lead, dragHandle, overlay }) {
           disabled={suggesting}
           className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-brand-50 py-1.5 text-xs font-medium text-brand-700 opacity-0 transition group-hover:opacity-100 hover:bg-brand-100 disabled:opacity-60"
         >
-          <Sparkles className={cn("h-3.5 w-3.5", suggesting && "animate-pulse")} />
+          <Sparkles
+            className={cn("h-3.5 w-3.5", suggesting && "animate-pulse")}
+          />
           {suggesting ? "Thinking…" : "AI suggest next step"}
         </button>
       )}
