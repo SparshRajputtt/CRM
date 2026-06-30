@@ -5,7 +5,11 @@ import {
   Contact2,
   KanbanSquare,
   StickyNote,
-  // CalendarCheck,
+  CalendarDays,
+  BarChart3,
+  FileText,
+  Receipt,
+  CalendarCheck,
   Settings,
   LogOut,
   Sparkles,
@@ -16,15 +20,28 @@ import { useAuth } from "../../context/AuthContext";
 /* Primary navigation — icon + label rail, matching the reference sidebar. */
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutGrid, end: true },
+
   { to: "/leads", label: "Leads", icon: Users },
   { to: "/customers", label: "Customers", icon: Contact2 },
+
   { to: "/jobs", label: "Jobs", icon: KanbanSquare },
+  { to: "/calendar", label: "Calendar", icon: CalendarDays },
+
+  { to: "/services", label: "Services", icon: Sparkles },
+
+  { to: "/quotes", label: "Quotes", icon: FileText },
+  { to: "/invoices", label: "Invoices", icon: Receipt },
+
+  { to: "/analytics", label: "Analytics", icon: BarChart3 },
+
   { to: "/notes", label: "Notes", icon: StickyNote },
-  // { to: "/tasks", label: "Follow-ups", icon: CalendarCheck },
+
+  { to: "/tasks", label: "Follow-ups", icon: CalendarCheck },
 ];
 
 export function Sidebar({ onNavigate }) {
   const { logout } = useAuth();
+  console.log(NAV);
 
   return (
     <aside className="flex h-full w-64 flex-col bg-surface border-r border-line">

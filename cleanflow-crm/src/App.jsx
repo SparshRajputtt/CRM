@@ -41,6 +41,11 @@ export default function App() {
         <Route path="/notes" element={<Notes />} />
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/quotes" element={<Quotes />} />
+        <Route path="/invoices" element={<Invoices />} />
+        <Route path="/analytics" element={<Analytics />} />
       </Route>
 
       {/* Fallback */}
